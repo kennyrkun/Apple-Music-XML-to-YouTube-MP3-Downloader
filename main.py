@@ -2,12 +2,10 @@ import os
 import plistlib
 import yt_dlp
 from rich import print
-from rich.prompt import Prompt
 
-def parse_favorite_songs(xml_path, min_play_count=5):
+def parse_favorite_songs(xml, min_play_count=5):
     """Parse Apple Music XML and return only favorite songs with play count above threshold."""
-    with open(xml_path, 'rb') as f:
-        plist = plistlib.load(f)
+    plist = plistlib.loads(xml)
     
     tracks = plist['Tracks']
     favorite_songs = []
@@ -49,14 +47,17 @@ def download_song_from_youtube(query, download_path):
             print(f"[red]Failed to download {query}: {e}[/red]")
 
 def main():
-    xml_path = Prompt.ask("[bold green]Enter the path to your Apple Music XML file[/]")
-    download_path = Prompt.ask("[bold green]Enter the path where you want to save MP3 files[/]")
-    min_play_count = int(Prompt.ask("[bold green]Enter minimum Play Count to consider as favorite[/]", default="5"))
+    download_path = os.getenv('SAVE_PATH', '/music/')
+    min_play_count = 0
+
+    url = os.getenv('XML_URL')
+    r = requests.get(url)
+    xml = r.content
 
     if not os.path.exists(download_path):
         os.makedirs(download_path)
 
-    favorite_songs = parse_favorite_songs(xml_path, min_play_count)
+    favorite_songs = parse_favorite_songs(xml, min_play_count)
 
     print(f"\n[bold yellow]Found {len(favorite_songs)} favorite songs. Starting download...[/bold yellow]\n")
 
