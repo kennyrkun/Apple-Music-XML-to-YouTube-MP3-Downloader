@@ -1,6 +1,7 @@
 import os
 import plistlib
 import yt_dlp
+import requests
 from rich import print
 
 def parse_favorite_songs(xml, min_play_count=5):
